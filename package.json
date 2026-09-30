@@ -1,0 +1,19 @@
+{
+  "name": "ludo-mirror-pro-tracker",
+  "version": "1.0.0",
+  "description": "Ludo King Mirror Pro Tracker - Offline AI Advisor",
+  "main": "index.html",
+  "scripts": {
+    "dev": "npx --yes serve -l 5173 .",
+    "start": "npx --yes serve -l 5173 .",
+    "serve": "npx --yes serve ."
+  },
+  "keywords": [
+    "ludo",
+    "tracker",
+    "ai",
+    "pwa"
+  ],
+  "author": "",
+  "license": "MIT"
+}

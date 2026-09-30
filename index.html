@@ -1,0 +1,2158 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#1b120c">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Ludo Mirror Pro">
+  <title>Ludo King Mirror Pro Tracker</title>
+
+  <!-- PWA Manifest Data URI -->
+  <link rel="manifest" href="data:application/manifest+json;charset=utf-8,%7B%22name%22%3A%22Ludo%20King%20Mirror%20Pro%22%2C%22short_name%22%3A%22LudoMirror%22%2C%22start_url%22%3A%22.%2F%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%231b120c%22%2C%22theme_color%22%3A%22%23e52521%22%7D">
+
+  <style>
+    :root {
+      --bg-wood: #18110b;
+      --board-border: #4a2810;
+      --cell-border: #c9ccd0;
+      --lk-red: #e52521;
+      --lk-green: #0b9e43;
+      --lk-yellow: #fecb00;
+      --lk-blue: #0077c8;
+      --star-color: #555555;
+      --font-stack: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    }
+
+    html, body {
+      height: 100%;
+      height: 100dvh;
+      max-height: 100dvh;
+      overflow: hidden;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: radial-gradient(circle at 50% 20%, #2b1a10 0%, #110b06 100%);
+      color: #ffffff;
+      font-family: var(--font-stack);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    /* FULL SCREEN ZERO-SCROLL CONTAINER */
+    .app-container {
+      width: 100%;
+      max-width: 430px;
+      height: 100%;
+      height: 100dvh;
+      max-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      padding: 2px 6px 3px;
+      box-sizing: border-box;
+      overflow: hidden;
+      margin: 0 auto;
+    }
+
+    /* TOP HEADER & CONTROLS */
+    .top-bar {
+      order: 1;
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 2px 2px;
+      flex: 0 0 auto;
+    }
+
+    .app-title {
+      font-size: 0.92rem;
+      font-weight: 900;
+      letter-spacing: 0.3px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      color: #ffe6a3;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+    }
+    .pro-tag {
+      background: linear-gradient(135deg, #ff0055, #ff5500);
+      color: #fff;
+      font-size: 0.6rem;
+      font-weight: 900;
+      padding: 1px 5px;
+      border-radius: 4px;
+      box-shadow: 0 0 6px rgba(255, 0, 85, 0.6);
+    }
+
+    .header-btns {
+      display: flex;
+      gap: 5px;
+      align-items: center;
+    }
+
+    .tool-btn {
+      background: #2a1c12;
+      border: 1px solid #5a3820;
+      color: #ffd8a8;
+      font-size: 0.7rem;
+      font-weight: 800;
+      padding: 3px 7px;
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+      transition: all 0.15s ease;
+    }
+    .tool-btn:active {
+      transform: scale(0.93);
+      background: #3d2719;
+    }
+    .tool-btn.dock-active {
+      background: rgba(0, 242, 254, 0.2);
+      border-color: #00f2fe;
+      color: #00f2fe;
+      box-shadow: 0 0 8px rgba(0, 242, 254, 0.4);
+    }
+
+    /* OPPONENT DICE ROW */
+    .opp-dice-section {
+      order: 2;
+      width: 100%;
+      background: linear-gradient(180deg, #241910 0%, #18100a 100%);
+      border: 1.5px solid #d4a017;
+      border-radius: 10px;
+      padding: 3px 6px;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.6);
+      flex: 0 0 auto;
+      transition: order 0.2s ease;
+    }
+
+    .section-header-opp {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.66rem;
+      font-weight: 800;
+      color: #ffd24d;
+      margin-bottom: 2px;
+      letter-spacing: 0.3px;
+    }
+
+    .dice-group {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 4px;
+    }
+
+    .dice-btn-opp {
+      background: linear-gradient(180deg, #3d2a14 0%, #201509 100%);
+      border: 1.2px solid #8c6320;
+      border-radius: 6px;
+      height: 30px;
+      color: #fff4cc;
+      font-size: 1.1rem;
+      font-weight: 900;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 0 #110a04, inset 0 1px 1px rgba(255,255,255,0.2);
+      transition: all 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
+      position: relative;
+    }
+    .dice-btn-opp:active {
+      transform: translateY(2px) scale(0.93);
+    }
+    .dice-btn-opp.selected {
+      background: linear-gradient(180deg, #ffd700 0%, #cc9900 100%);
+      color: #1a1200;
+      border-color: #ffffff;
+      box-shadow: 0 0 16px #ffc800, 0 0 5px #fff;
+      transform: translateY(-2px) scale(1.05);
+    }
+
+    /* 15x15 LUDO KING BOARD - DYNAMIC AUTO FIT (NEVER OVERFLOWS) */
+    .board-container {
+      order: 3;
+      width: min(340px, 39vh, 92vw);
+      height: min(340px, 39vh, 92vw);
+      aspect-ratio: 1 / 1;
+      background: #ffffff;
+      border: 3.5px solid var(--board-border);
+      border-radius: 10px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.85);
+      display: grid;
+      grid-template-columns: repeat(15, 1fr);
+      grid-template-rows: repeat(15, 1fr);
+      position: relative;
+      overflow: hidden;
+      flex: 0 0 auto;
+      margin: 1px auto;
+    }
+
+    /* TRACK SQUARES */
+    .cell {
+      border: 0.5px solid #bdc3c7;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      background: #ffffff;
+    }
+
+    /* 4 CORNER YARDS */
+    .yard {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      padding: 10%;
+      gap: 12%;
+      position: relative;
+    }
+    .yard-green  { grid-column: 1 / 7; grid-row: 1 / 7; background: var(--lk-green); }
+    .yard-yellow { grid-column: 10 / 16; grid-row: 1 / 7; background: var(--lk-yellow); }
+    .yard-red    { grid-column: 1 / 7; grid-row: 10 / 16; background: var(--lk-red); }
+    .yard-blue   { grid-column: 10 / 16; grid-row: 10 / 16; background: var(--lk-blue); }
+
+    .yard-slot {
+      background: #ffffff;
+      border-radius: 50%;
+      border: 3px solid rgba(0,0,0,0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.4);
+      cursor: pointer;
+    }
+
+    /* CENTER TRIANGLE AREA */
+    .center-home {
+      grid-column: 7 / 10;
+      grid-row: 7 / 10;
+      position: relative;
+      background: #ffffff;
+      overflow: hidden;
+      border: 1px solid #7f8c8d;
+    }
+    .triangle-green  { position: absolute; width: 0; height: 0; border-top: 45px solid var(--lk-green); border-left: 45px solid transparent; border-right: 45px solid transparent; top: 0; left: 50%; transform: translateX(-50%); }
+    .triangle-yellow { position: absolute; width: 0; height: 0; border-right: 45px solid var(--lk-yellow); border-top: 45px solid transparent; border-bottom: 45px solid transparent; right: 0; top: 50%; transform: translateY(-50%); }
+    .triangle-red    { position: absolute; width: 0; height: 0; border-bottom: 45px solid var(--lk-red); border-left: 45px solid transparent; border-right: 45px solid transparent; bottom: 0; left: 50%; transform: translateX(-50%); }
+    .triangle-blue   { position: absolute; width: 0; height: 0; border-left: 45px solid var(--lk-blue); border-top: 45px solid transparent; border-bottom: 45px solid transparent; left: 0; top: 50%; transform: translateY(-50%); }
+
+    .center-tokens-holder {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+      pointer-events: none;
+    }
+
+    /* HOME COLUMNS */
+    .cell.path-red    { background: var(--lk-red); }
+    .cell.path-yellow { background: var(--lk-yellow); }
+    .cell.path-green  { background: var(--lk-green); }
+    .cell.path-blue   { background: var(--lk-blue); }
+
+    /* SAFE STARS */
+    .cell.star::after {
+      content: "★";
+      font-size: 13px;
+      font-weight: 900;
+      color: var(--star-color);
+      opacity: 0.85;
+      pointer-events: none;
+    }
+    .cell.path-red.star::after, .cell.path-yellow.star::after {
+      color: #ffffff;
+    }
+
+    /* ARROWS ON ENTRY SQUARES */
+    .cell.arrow-red::after    { content: "▲"; color: #ffffff; font-size: 11px; }
+    .cell.arrow-yellow::after { content: "▼"; color: #ffffff; font-size: 11px; }
+
+    /* LUDO KING 3D GOTIS (TOKENS) */
+    .goti {
+      width: 82%;
+      height: 82%;
+      max-width: 22px;
+      max-height: 22px;
+      aspect-ratio: 1 / 1;
+      border-radius: 50%;
+      cursor: pointer;
+      position: relative;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: clamp(8px, 1.8vh, 10px);
+      font-weight: 900;
+      color: #ffffff;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+      box-shadow: 0 3px 5px rgba(0,0,0,0.5), inset 0 2px 2px rgba(255,255,255,0.7), inset 0 -2px 2px rgba(0,0,0,0.4);
+      transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.15s, box-shadow 0.2s;
+      animation: gotiPop 0.32s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    @keyframes gotiPop {
+      0% { transform: scale(0.1) translateY(-18px); opacity: 0; }
+      60% { transform: scale(1.25) translateY(2px); opacity: 1; }
+      80% { transform: scale(0.92); }
+      100% { transform: scale(1); }
+    }
+    .goti:active {
+      transform: scale(1.3) !important;
+      filter: brightness(1.3);
+    }
+
+    .goti-red {
+      background: radial-gradient(circle at 35% 35%, #ff6b6b 0%, #d80000 60%, #850000 100%);
+      border: 1.5px solid #fff;
+    }
+
+    .goti-yellow {
+      background: radial-gradient(circle at 35% 35%, #ffeb60 0%, #f1b800 60%, #a07400 100%);
+      border: 1.5px solid #fff;
+      color: #332000;
+      text-shadow: none;
+    }
+
+    /* GLOWING BEST MOVE GOTI */
+    .goti.best-goti-highlight {
+      animation: gotiPulse 0.85s infinite alternate, gotiPop 0.32s cubic-bezier(0.34, 1.56, 0.64, 1);
+      border: 2.5px solid #00ffff !important;
+      z-index: 99;
+    }
+    @keyframes gotiPulse {
+      0% {
+        transform: scale(1.08);
+        box-shadow: 0 0 12px #00ffff, 0 0 22px #ff2a2a, 0 0 40px rgba(0,255,255,0.3);
+      }
+      100% {
+        transform: scale(1.38);
+        box-shadow: 0 0 28px #00ffff, 0 0 45px #ff0055, 0 0 60px rgba(0,255,255,0.5);
+      }
+    }
+
+    /* KILL CELEBRATION TOAST */
+    #killToast {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    #killToast.show {
+      opacity: 1;
+      pointer-events: none;
+    }
+    .kill-toast-inner {
+      background: linear-gradient(135deg, #1a0a00 0%, #380000 100%);
+      border: 3px solid #ff2222;
+      border-radius: 20px;
+      padding: 24px 36px;
+      text-align: center;
+      box-shadow: 0 0 60px rgba(255,30,30,0.6), 0 20px 40px rgba(0,0,0,0.8);
+      animation: toastBounce 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    @keyframes toastBounce {
+      0% { transform: scale(0.4) translateY(-40px); opacity: 0; }
+      70% { transform: scale(1.1) translateY(4px); }
+      100% { transform: scale(1) translateY(0); opacity: 1; }
+    }
+    .kill-toast-emoji { font-size: 3.5rem; display: block; margin-bottom: 8px; }
+    .kill-toast-title { font-size: 1.6rem; font-weight: 900; color: #ff3333; letter-spacing: 1px; }
+    .kill-toast-sub { font-size: 0.9rem; color: #ffbb88; margin-top: 4px; }
+
+    /* BUST TOAST (3 consecutive 6s = BUST!) */
+    #bustToast {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 9998;
+      display: flex;
+      justify-content: center;
+      padding-top: 20px;
+      pointer-events: none;
+      opacity: 0;
+      transform: translateY(-60px);
+      transition: opacity 0.25s, transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    #bustToast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .bust-toast-inner {
+      background: linear-gradient(135deg, #1a1200 0%, #2a1800 100%);
+      border: 3px solid var(--bust-color, #ff6600);
+      border-radius: 16px;
+      padding: 16px 28px;
+      text-align: center;
+      box-shadow: 0 0 40px rgba(255,100,0,0.5), 0 10px 30px rgba(0,0,0,0.7);
+      min-width: 260px;
+    }
+    .bust-toast-emoji { font-size: 2.8rem; display: block; margin-bottom: 4px; }
+    .bust-toast-title { font-size: 1.35rem; font-weight: 900; color: #ff6600; letter-spacing: 1px; }
+    .bust-toast-sub { font-size: 0.8rem; color: #ffd8a8; margin-top: 4px; line-height: 1.3; }
+
+    /* SIX COUNTER INDICATOR (on dice status) */
+    .six-counter-danger { color: #ff6600 !important; animation: sixWarn 0.4s ease; }
+    .six-counter-final  { color: #ff0000 !important; animation: sixWarn 0.4s ease; }
+    @keyframes sixWarn {
+      0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); }
+    }
+
+    /* DICE RIPPLE EFFECT */
+    .dice-btn-my, .dice-btn-opp {
+      overflow: hidden;
+    }
+    .ripple {
+      position: absolute;
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      background: rgba(255,255,255,0.35);
+      transform: scale(0);
+      animation: rippleAnim 0.5s linear;
+      pointer-events: none;
+      margin-top: -30px;
+      margin-left: -30px;
+    }
+    @keyframes rippleAnim {
+      to { transform: scale(3); opacity: 0; }
+    }
+
+    /* SUGGESTION CARD SLIDE-IN */
+    @keyframes suggSlideIn {
+      0% { opacity: 0.3; transform: translateY(8px) scale(0.98); }
+      60% { transform: translateY(-2px) scale(1.01); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .suggestion-banner.new-move {
+      animation: suggSlideIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    /* MULTIPLE GOTIS STACK */
+    .stack-wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+      gap: 1px;
+    }
+    .stack-wrapper.multi .goti {
+      width: 15px;
+      height: 15px;
+      font-size: 7px;
+      border-width: 1px;
+    }
+
+    /* COMPACT HIGH-TECH SUGGESTION HUD */
+    .suggestion-banner {
+      order: 4;
+      width: 100%;
+      background: linear-gradient(135deg, #182233 0%, #0c121c 100%);
+      border: 1.5px solid #00f2fe;
+      border-radius: 10px;
+      padding: 4px 8px;
+      box-shadow: 0 0 14px rgba(0, 242, 254, 0.2), 0 3px 8px rgba(0,0,0,0.6);
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      flex: 0 0 auto;
+      transition: border-color 0.35s ease, box-shadow 0.35s ease;
+    }
+
+    .sugg-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.65rem;
+    }
+
+    .sugg-badge-wrap {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .sugg-badge {
+      font-size: 0.62rem;
+      font-weight: 900;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      background: rgba(0, 242, 254, 0.2);
+      color: #00f2fe;
+      padding: 1px 6px;
+      border-radius: 4px;
+      border: 1px solid rgba(0, 242, 254, 0.4);
+    }
+
+    .win-chance-pill {
+      color: #00f2fe;
+      font-weight: 900;
+      font-size: 0.68rem;
+    }
+
+    .sugg-score {
+      font-size: 0.72rem;
+      font-weight: 900;
+      color: #ffe600;
+    }
+
+    .win-prob-track {
+      width: 100%;
+      height: 3px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 3px;
+      overflow: hidden;
+      margin: 1px 0;
+    }
+    .win-prob-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #00f2fe 0%, #00e676 100%);
+      box-shadow: 0 0 8px rgba(0, 242, 254, 0.8);
+      transition: width 0.4s ease;
+    }
+
+    .sugg-content-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .sugg-text-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+      min-width: 0;
+      flex: 1;
+    }
+
+    .sugg-main-text {
+      font-size: 0.88rem;
+      font-weight: 900;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .target-goti-pill {
+      background: var(--lk-red);
+      color: #fff;
+      padding: 1px 7px;
+      border-radius: 5px;
+      font-size: 0.82rem;
+      box-shadow: 0 0 6px rgba(229, 37, 33, 0.6);
+    }
+
+    .sugg-sub-reason {
+      font-size: 0.70rem;
+      font-weight: 800;
+      color: #69f0ae;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .auto-move-btn {
+      background: linear-gradient(135deg, #00f2fe, #4facfe);
+      color: #061528;
+      border: none;
+      border-radius: 6px;
+      padding: 4px 8px;
+      font-size: 0.72rem;
+      font-weight: 900;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      white-space: nowrap;
+      box-shadow: 0 2px 6px rgba(0, 242, 254, 0.4);
+      flex-shrink: 0;
+    }
+    .auto-move-btn:active {
+      transform: scale(0.96);
+    }
+
+    /* GAME MODE TOGGLE */
+    .mode-toggle {
+      display: flex;
+      background: #23160e;
+      border: 1px solid #5a3820;
+      border-radius: 14px;
+      padding: 1px 2px;
+      cursor: pointer;
+      font-size: 0.62rem;
+      font-weight: 800;
+    }
+    .mode-pill {
+      padding: 2px 6px;
+      border-radius: 12px;
+      color: #b59b82;
+      transition: all 0.2s;
+    }
+    .mode-pill.active {
+      background: linear-gradient(135deg, #ff0055, #ff5500);
+      color: #ffffff;
+      box-shadow: 0 0 6px rgba(255, 0, 85, 0.5);
+    }
+
+    /* THREAT RADAR OVERLAYS ON BOARD */
+    .cell.threat-zone {
+      background: #ffe3e3 !important;
+      box-shadow: inset 0 0 4px rgba(229, 37, 33, 0.7) !important;
+    }
+    .cell.golden-zone {
+      background: #e6ffed !important;
+      box-shadow: inset 0 0 4px rgba(0, 230, 118, 0.7) !important;
+    }
+
+    /* ALTERNATIVE PLANS ROW (PLAN A, B, C) */
+    .alt-plans-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 4px;
+      margin-top: 2px;
+    }
+    .alt-plan-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 6px;
+      padding: 2px 4px;
+      text-align: center;
+      font-size: 0.62rem;
+      font-weight: 800;
+      cursor: pointer;
+      color: #ffd8a8;
+      transition: all 0.15s;
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      align-items: center;
+      gap: 3px;
+    }
+    .alt-plan-btn:hover {
+      background: rgba(0, 242, 254, 0.18);
+      border-color: #00f2fe;
+    }
+    .alt-plan-btn.plan-best {
+      border-color: #00f2fe;
+      background: rgba(0, 242, 254, 0.15);
+      color: #00f2fe;
+      box-shadow: 0 0 6px rgba(0, 242, 254, 0.3);
+    }
+
+    /* MY DICE ROW (BOTTOM) */
+    .my-dice-section {
+      order: 5;
+      width: 100%;
+      background: linear-gradient(180deg, #2b1212 0%, #170909 100%);
+      border: 1.5px solid #e52521;
+      border-radius: 10px;
+      padding: 3px 6px;
+      box-shadow: 0 3px 10px rgba(229, 37, 33, 0.35);
+      flex: 0 0 auto;
+    }
+
+    .section-header-my {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.68rem;
+      font-weight: 900;
+      color: #ff7875;
+      margin-bottom: 2px;
+      letter-spacing: 0.3px;
+    }
+
+    .dice-btn-my {
+      background: linear-gradient(180deg, #441818 0%, #220808 100%);
+      border: 1.2px solid #8f2020;
+      border-radius: 7px;
+      height: 35px;
+      color: #ffffff;
+      font-size: 1.25rem;
+      font-weight: 900;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 0 #120303, inset 0 1px 1px rgba(255,255,255,0.25);
+      transition: all 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
+      position: relative;
+    }
+    .dice-btn-my:active {
+      transform: translateY(2px) scale(0.94);
+      box-shadow: 0 0 0 #120303;
+    }
+    .dice-btn-my.selected {
+      background: linear-gradient(180deg, #ff3333 0%, #cc0000 100%);
+      border-color: #ffffff;
+      box-shadow: 0 0 18px #ff2e2e, 0 0 6px #fff;
+      transform: translateY(-2px) scale(1.06);
+    }
+
+    /* ⚡ 1-HAND / DOCK MODE: Dono Dice Niche! */
+    .app-container.dock-mode .opp-dice-section {
+      order: 4; /* Below board, above Mera Dice */
+    }
+    .app-container.dock-mode .my-dice-section {
+      order: 5; /* Mera Dice */
+    }
+    .app-container.dock-mode .suggestion-banner {
+      order: 6; /* At the very bottom */
+    }
+
+    /* HINT / STEP HELPER */
+    .step-hint {
+      display: none; /* Hide to preserve 100% single-screen zero scroll */
+    }
+  </style>
+</head>
+<body>
+
+  <!-- KILL CELEBRATION TOAST OVERLAY -->
+  <div id="killToast">
+    <div class="kill-toast-inner" id="killToastInner" style="display:none;">
+      <span class="kill-toast-emoji">🔥</span>
+      <div class="kill-toast-title" id="killToastTitle">KAAT DIYA!</div>
+      <div class="kill-toast-sub" id="killToastSub">Opponent ghar gaya!</div>
+    </div>
+  </div>
+
+  <!-- BUST TOAST (3 consecutive 6s = BUST!) -->
+  <div id="bustToast" style="--bust-color:#ff6600;">
+    <div class="bust-toast-inner">
+      <span class="bust-toast-emoji" id="bustToastEmoji">💥</span>
+      <div class="bust-toast-title" id="bustToastTitle">BUST!</div>
+      <div class="bust-toast-sub" id="bustToastSub">3 consecutive six = Turn forfeit!</div>
+    </div>
+  </div>
+
+  <!-- FULL SCREEN CONTAINER (ZERO SCROLL FIT) -->
+  <div class="app-container" id="appContainer">
+
+    <!-- TOP HEADER -->
+    <div class="top-bar">
+      <div class="app-title">
+        <span>🎲 LUDO MIRROR</span>
+        <span class="pro-tag">PRO</span>
+      </div>
+      <div class="mode-toggle" id="modeToggle" onclick="toggleGameMode()" title="Mode badlein (Classic vs Zupee)">
+        <span class="mode-pill active" id="modePillClassic">👑 CLASSIC</span>
+        <span class="mode-pill" id="modePillZupee">⚡ ZUPEE</span>
+      </div>
+      <div class="header-btns">
+        <button class="tool-btn" id="btnToggleDock" onclick="toggleDiceDock()" title="Layout: Split vs Dono Dice Niche">⚡ 1-Hand</button>
+        <button class="tool-btn" id="btnUndo" title="Pichli chal vapis lein">↩</button>
+        <button class="tool-btn" id="btnReset" title="Naya Game Shuru Karein">🔄</button>
+      </div>
+    </div>
+
+    <!-- ROW A: OPPONENT DICE (YELLOW) -->
+    <div class="opp-dice-section" id="oppDiceSection">
+      <div class="section-header-opp">
+        <span>🟡 OPPONENT DICE (Jo uska aaya tick karo)</span>
+        <span id="oppDiceStatus" style="font-weight:900;">DICE: -</span>
+      </div>
+      <div class="dice-group">
+        <button class="dice-btn-opp" onclick="addRipple(event);setOppDice(1)">1</button>
+        <button class="dice-btn-opp" onclick="addRipple(event);setOppDice(2)">2</button>
+        <button class="dice-btn-opp" onclick="addRipple(event);setOppDice(3)">3</button>
+        <button class="dice-btn-opp" onclick="addRipple(event);setOppDice(4)">4</button>
+        <button class="dice-btn-opp" onclick="addRipple(event);setOppDice(5)">5</button>
+        <button class="dice-btn-opp" onclick="addRipple(event);setOppDice(6)">6</button>
+      </div>
+    </div>
+
+    <!-- LUDO KING BOARD (15x15) -->
+    <div class="board-container" id="boardGrid">
+      <!-- 4 Yards -->
+      <div class="yard yard-green" id="yardGreen">
+        <div class="yard-slot"></div><div class="yard-slot"></div>
+        <div class="yard-slot"></div><div class="yard-slot"></div>
+      </div>
+
+      <div class="yard yard-yellow" id="yardYellow">
+        <div class="yard-slot" id="opp_slot_0" onclick="handleGotiClick('opp', 0)"></div>
+        <div class="yard-slot" id="opp_slot_1" onclick="handleGotiClick('opp', 1)"></div>
+        <div class="yard-slot" id="opp_slot_2" onclick="handleGotiClick('opp', 2)"></div>
+        <div class="yard-slot" id="opp_slot_3" onclick="handleGotiClick('opp', 3)"></div>
+      </div>
+
+      <div class="yard yard-red" id="yardRed">
+        <div class="yard-slot" id="my_slot_0" onclick="handleGotiClick('my', 0)"></div>
+        <div class="yard-slot" id="my_slot_1" onclick="handleGotiClick('my', 1)"></div>
+        <div class="yard-slot" id="my_slot_2" onclick="handleGotiClick('my', 2)"></div>
+        <div class="yard-slot" id="my_slot_3" onclick="handleGotiClick('my', 3)"></div>
+      </div>
+
+      <div class="yard yard-blue" id="yardBlue">
+        <div class="yard-slot"></div><div class="yard-slot"></div>
+        <div class="yard-slot"></div><div class="yard-slot"></div>
+      </div>
+
+      <!-- Center Finished Goal -->
+      <div class="center-home" id="centerGoal">
+        <div class="triangle-green"></div>
+        <div class="triangle-yellow"></div>
+        <div class="triangle-red"></div>
+        <div class="triangle-blue"></div>
+        <div class="center-tokens-holder" id="centerTokens"></div>
+      </div>
+    </div>
+
+    <!-- COMPACT AI ADVISOR HUD -->
+    <div class="suggestion-banner" id="suggestionCard">
+      <div class="sugg-header-row">
+        <div class="sugg-badge-wrap">
+          <span class="sugg-badge">🤖 AI ADVISOR</span>
+          <span class="win-chance-pill" id="winChancePill">WIN: 50%</span>
+        </div>
+        <span class="sugg-score" id="suggScore">READY</span>
+      </div>
+      <div class="win-prob-track">
+        <div class="win-prob-fill" id="winProbFill" style="width: 50%;"></div>
+      </div>
+      <div class="sugg-content-row">
+        <div class="sugg-text-wrap">
+          <div class="sugg-main-text" id="suggMain">
+            <span>Niche Dice select karo!</span>
+          </div>
+          <div class="sugg-sub-reason" id="suggReason">
+            <span>➡️ AI best goti batayega</span>
+          </div>
+        </div>
+        <button class="auto-move-btn" id="btnAutoMove" style="display:none;" onclick="applyBestMove()">
+          ⚡ CHAL DO
+        </button>
+      </div>
+      <div class="alt-plans-row" id="altPlansRow" style="display:none;"></div>
+    </div>
+
+    <!-- ROW B: MY DICE (RED) -->
+    <div class="my-dice-section" id="myDiceSection">
+      <div class="section-header-my">
+        <span>🔴 MERA DICE (Apna dice chuno ➔ Goti glow karegi)</span>
+        <span id="myDiceStatus" style="color:#ffffff;">DICE: -</span>
+      </div>
+      <div class="dice-group">
+        <button class="dice-btn-my" id="my_d_1" onclick="addRipple(event);setMyDice(1)">1</button>
+        <button class="dice-btn-my" id="my_d_2" onclick="addRipple(event);setMyDice(2)">2</button>
+        <button class="dice-btn-my" id="my_d_3" onclick="addRipple(event);setMyDice(3)">3</button>
+        <button class="dice-btn-my" id="my_d_4" onclick="addRipple(event);setMyDice(4)">4</button>
+        <button class="dice-btn-my" id="my_d_5" onclick="addRipple(event);setMyDice(5)">5</button>
+        <button class="dice-btn-my" id="my_d_6" onclick="addRipple(event);setMyDice(6)">6</button>
+      </div>
+    </div>
+
+  </div><!-- /app-container -->
+
+  <script>
+    /* ==========================================================================
+       SMOOTH ANIMATIONS & MICRO-INTERACTIONS
+       ========================================================================== */
+
+    // RIPPLE EFFECT on dice button press
+    function addRipple(e) {
+      const btn = e.currentTarget;
+      const existing = btn.querySelector('.ripple');
+      if (existing) existing.remove();
+      const ripple = document.createElement('span');
+      ripple.className = 'ripple';
+      const rect = btn.getBoundingClientRect();
+      ripple.style.left = (e.clientX - rect.left) + 'px';
+      ripple.style.top = (e.clientY - rect.top) + 'px';
+      btn.appendChild(ripple);
+      ripple.addEventListener('animationend', () => ripple.remove());
+    }
+
+    // DOCK TOGGLE (1-Hand fast mode: both dice at bottom)
+    let isDockMode = false;
+    function toggleDiceDock() {
+      triggerHaptic('light');
+      isDockMode = !isDockMode;
+      const app = document.getElementById('appContainer');
+      const btn = document.getElementById('btnToggleDock');
+      if (isDockMode) {
+        app.classList.add('dock-mode');
+        btn.innerHTML = '↕ Split';
+        btn.classList.add('dock-active');
+      } else {
+        app.classList.remove('dock-mode');
+        btn.innerHTML = '⚡ 1-Hand';
+        btn.classList.remove('dock-active');
+      }
+    }
+
+    // KILL CELEBRATION TOAST (Full-screen overlay)
+    let killToastTimer = null;
+    function showKillToast(title, sub) {
+      const toast = document.getElementById('killToast');
+      const inner = document.getElementById('killToastInner');
+      const titleEl = document.getElementById('killToastTitle');
+      const subEl = document.getElementById('killToastSub');
+      titleEl.textContent = title;
+      subEl.textContent = sub;
+      inner.style.display = 'block';
+      toast.classList.add('show');
+      if (killToastTimer) clearTimeout(killToastTimer);
+      killToastTimer = setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => { inner.style.display = 'none'; }, 250);
+      }, 2200);
+    }
+
+    // BUST TOAST (3 consecutive 6s = turn forfeit!)
+    let bustToastTimer = null;
+    function showBustToast(who) {
+      const toast = document.getElementById('bustToast');
+      const titleEl = document.getElementById('bustToastTitle');
+      const subEl = document.getElementById('bustToastSub');
+      if (who === 'my') {
+        document.getElementById('bustToastEmoji').textContent = '💥';
+        titleEl.textContent = 'TERA BUST HO GAYA!';
+        subEl.textContent = 'Lagatar 3 six = Turn forfeit! Koi goti nahi chalegi.';
+        toast.style.setProperty('--bust-color', '#ff4400');
+      } else {
+        document.getElementById('bustToastEmoji').textContent = '🎉';
+        titleEl.textContent = 'OPPONENT BUST!';
+        subEl.textContent = 'Opponent ke 3 consecutive six! Unka turn gaya. HAMARA CHANCE!';
+        toast.style.setProperty('--bust-color', '#00e676');
+        titleEl.style.color = '#00e676';
+      }
+      toast.classList.add('show');
+      if (bustToastTimer) clearTimeout(bustToastTimer);
+      bustToastTimer = setTimeout(() => {
+        toast.classList.remove('show');
+        if (who === 'opp') titleEl.style.color = '';
+      }, 2800);
+    }
+
+    // SUGGESTION CARD SLIDE-IN ANIMATION
+    function triggerSuggAnim() {
+      const card = document.getElementById('suggestionCard');
+      if (!card) return;
+      card.classList.remove('new-move');
+      void card.offsetWidth; // force reflow
+      card.classList.add('new-move');
+      card.addEventListener('animationend', () => card.classList.remove('new-move'), { once: true });
+    }
+
+    /* ==========================================================================
+       LUDO KING EXACT TRACK MAPPING (15x15)
+       52 Outer loop squares + 6 Home path squares + Center Pocket (57 steps)
+       ========================================================================== */
+
+    // Full 52 circular track coordinates on 15x15 Ludo board (1-indexed row, col)
+    // Red starts at index 0 (Square 1) -> travels 51 squares -> enters Red Home Column
+    // Yellow starts at index 26 (Square 27) -> travels 51 squares -> enters Yellow Home Column
+    const ringCoords = [
+      // 0: Red Start (col 7, row 14)
+      { r: 14, c: 7, star: true, color: 'red' },      // 0  (Square 1 - Star)
+      { r: 13, c: 7 },                                 // 1
+      { r: 12, c: 7 },                                 // 2
+      { r: 11, c: 7 },                                 // 3
+      { r: 10, c: 7 },                                 // 4
+      { r: 9,  c: 6 },                                 // 5
+      { r: 9,  c: 5 },                                 // 6
+      { r: 9,  c: 4 },                                 // 7
+      { r: 9,  c: 3, star: true },                     // 8  (Square 9 - Star)
+      { r: 9,  c: 2 },                                 // 9
+      { r: 9,  c: 1 },                                 // 10
+      { r: 8,  c: 1 },                                 // 11
+      { r: 7,  c: 1, star: true, color: 'green' },    // 12 (Square 13/14 Green Start - Star)
+      { r: 7,  c: 2 },                                 // 13
+      { r: 7,  c: 3 },                                 // 14
+      { r: 7,  c: 4 },                                 // 15
+      { r: 7,  c: 5 },                                 // 16
+      { r: 7,  c: 6 },                                 // 17
+      { r: 6,  c: 7 },                                 // 18
+      { r: 5,  c: 7 },                                 // 19
+      { r: 4,  c: 7, star: true },                     // 20 (Square 21/22 - Star)
+      { r: 3,  c: 7 },                                 // 21
+      { r: 2,  c: 7 },                                 // 22
+      { r: 1,  c: 7 },                                 // 23
+      { r: 1,  c: 8 },                                 // 24
+      { r: 1,  c: 9 },                                 // 25
+      { r: 2,  c: 9, star: true, color: 'yellow' },   // 26 (Square 27 Yellow Start - Star)
+      { r: 3,  c: 9 },                                 // 27
+      { r: 4,  c: 9 },                                 // 28
+      { r: 5,  c: 9 },                                 // 29
+      { r: 6,  c: 9 },                                 // 30
+      { r: 7,  c: 10 },                                // 31
+      { r: 7,  c: 11 },                                // 32
+      { r: 7,  c: 12 },                                // 33
+      { r: 7,  c: 13, star: true },                    // 34 (Square 35 - Star)
+      { r: 7,  c: 14 },                                // 35
+      { r: 7,  c: 15 },                                // 36
+      { r: 8,  c: 15 },                                // 37
+      { r: 9,  c: 15, star: true, color: 'blue' },    // 38 (Square 39/40 Blue Start - Star)
+      { r: 9,  c: 14 },                                // 39
+      { r: 9,  c: 13 },                                // 40
+      { r: 9,  c: 12 },                                // 41
+      { r: 9,  c: 11 },                                // 42
+      { r: 9,  c: 10 },                                // 43
+      { r: 10, c: 9 },                                 // 44
+      { r: 11, c: 9 },                                 // 45
+      { r: 12, c: 9 },                                 // 46
+      { r: 13, c: 9, star: true },                    // 47 (Square 48 - Star)
+      { r: 14, c: 9 },                                 // 48
+      { r: 15, c: 9 },                                 // 49
+      { r: 15, c: 8 },                                 // 50
+      { r: 15, c: 7 }                                  // 51
+    ];
+
+    // Red Home Column (5 steps before pocket)
+    const redHomePath = [
+      { r: 14, c: 8, color: 'red' },
+      { r: 13, c: 8, color: 'red' },
+      { r: 12, c: 8, color: 'red' },
+      { r: 11, c: 8, color: 'red' },
+      { r: 10, c: 8, color: 'red' }
+    ];
+
+    // Yellow Home Column (5 steps before pocket)
+    const yellowHomePath = [
+      { r: 2, c: 8, color: 'yellow' },
+      { r: 3, c: 8, color: 'yellow' },
+      { r: 4, c: 8, color: 'yellow' },
+      { r: 5, c: 8, color: 'yellow' },
+      { r: 6, c: 8, color: 'yellow' }
+    ];
+
+    /*
+      SAFE SQUARES on 0-51 ring index:
+      Red Start: 0
+      Safe Star 1: 8
+      Green Start: 12
+      Safe Star 2: 20
+      Yellow Start: 26
+      Safe Star 3: 34
+      Blue Start: 38
+      Safe Star 4: 47
+    */
+    const safeRingIndices = [0, 8, 12, 20, 26, 34, 38, 47];
+
+    /*
+      GAME STATE:
+      stepProgress: -1 = Yard, 0 = Start, 51 = Last ring square, 52-56 = Home Column, 57 = Won/Pocket
+    */
+    let myState = [-1, -1, -1, -1];
+    let oppState = [-1, -1, -1, -1];
+
+    let currentMyDice = null;
+    let currentOppDice = null;
+    let bestMoveObj = null;
+    let historyStack = [];
+
+    // ── 3 CONSECUTIVE 6 BUST RULE ──────────────────────────────────────
+    // Standard Ludo rule: if you roll 6 three times in a row → BUST!
+    // Your turn is cancelled and you lose any bonus turns earned.
+    let myConsecutiveSixes   = 0;   // tracks our consecutive 6s
+    let oppConsecutiveSixes  = 0;   // tracks opponent's consecutive 6s
+    // ───────────────────────────────────────────────────────────────────
+
+    /* ==========================================================================
+       BUILD VISUAL 15x15 BOARD DOM
+       ========================================================================== */
+    function buildBoardDOM() {
+      const board = document.getElementById('boardGrid');
+
+      // Create cells for ring
+      ringCoords.forEach((cell, idx) => {
+        const div = document.createElement('div');
+        div.className = 'cell';
+        div.id = `ring_${idx}`;
+        div.style.gridRow = cell.r;
+        div.style.gridColumn = cell.c;
+
+        if (cell.color) div.classList.add(`path-${cell.color}`);
+        if (cell.star) div.classList.add('star');
+
+        // Arrows on player entry squares
+        if (idx === 0) div.classList.add('arrow-red');
+        if (idx === 26) div.classList.add('arrow-yellow');
+
+        // Click to place or move
+        div.onclick = () => onCellClicked('ring', idx);
+
+        board.appendChild(div);
+      });
+
+      // Red Home Column
+      redHomePath.forEach((cell, idx) => {
+        const div = document.createElement('div');
+        div.className = 'cell path-red';
+        div.id = `red_home_${idx}`;
+        div.style.gridRow = cell.r;
+        div.style.gridColumn = cell.c;
+        div.onclick = () => onCellClicked('red_home', idx);
+        board.appendChild(div);
+      });
+
+      // Yellow Home Column
+      yellowHomePath.forEach((cell, idx) => {
+        const div = document.createElement('div');
+        div.className = 'cell path-yellow';
+        div.id = `yellow_home_${idx}`;
+        div.style.gridRow = cell.r;
+        div.style.gridColumn = cell.c;
+        div.onclick = () => onCellClicked('yellow_home', idx);
+        board.appendChild(div);
+      });
+
+      renderAllGotis();
+    }
+
+    /* Convert stepProgress (0 to 50) to global ring index for Red & Yellow */
+    function getRingIndex(player, progress) {
+      if (progress < 0 || progress > 50) return null;
+      if (player === 'my') {
+        return progress; // Red start is 0
+      } else {
+        return (26 + progress) % 52; // Yellow start is 26
+      }
+    }
+
+    /* Check if a ring index is a Safe Star */
+    function isSafeRingIndex(ringIdx) {
+      return safeRingIndices.includes(ringIdx);
+    }
+
+    /* ==========================================================================
+       RENDER ALL GOTIS ON BOARD
+       ========================================================================== */
+    function renderAllGotis() {
+      // Clear ring cells and radar classes
+      for (let i = 0; i < 52; i++) {
+        const el = document.getElementById(`ring_${i}`);
+        if (el) {
+          el.innerHTML = '';
+          el.classList.remove('threat-zone', 'golden-zone');
+        }
+      }
+
+      // Compute Real-Time Threat Radar (Enemy 1-6 Kill Cone & Golden 7-8 Zone)
+      oppState.forEach(oProg => {
+        if (oProg >= 0 && oProg <= 50) {
+          const oRing = getRingIndex('opp', oProg);
+          // Threat zone: 1 to 6 steps ahead of opponent
+          for (let d = 1; d <= 6; d++) {
+            const dangerRing = (oRing + d) % 52;
+            if (!isSafeRingIndex(dangerRing)) {
+              const el = document.getElementById(`ring_${dangerRing}`);
+              if (el) el.classList.add('threat-zone');
+            }
+          }
+          // Golden Zone: 7 and 8 steps ahead of opponent
+          for (let d = 7; d <= 8; d++) {
+            const goldRing = (oRing + d) % 52;
+            if (!isSafeRingIndex(goldRing)) {
+              const el = document.getElementById(`ring_${goldRing}`);
+              if (el) el.classList.add('golden-zone');
+            }
+          }
+        }
+      });
+
+      // Clear home paths
+      for (let i = 0; i < 5; i++) {
+        const rEl = document.getElementById(`red_home_${i}`);
+        if (rEl) rEl.innerHTML = '';
+        const yEl = document.getElementById(`yellow_home_${i}`);
+        if (yEl) yEl.innerHTML = '';
+      }
+      // Clear yard slots
+      for (let i = 0; i < 4; i++) {
+        document.getElementById(`my_slot_${i}`).innerHTML = '';
+        document.getElementById(`opp_slot_${i}`).innerHTML = '';
+      }
+      // Clear center
+      document.getElementById('centerTokens').innerHTML = '';
+
+      // Collect tokens on each cell for multi-stacking
+      const ringOccupants = {};
+      const redHomeOccupants = {};
+      const yellowHomeOccupants = {};
+      const wonOccupants = [];
+
+      // Place Red Gotis
+      myState.forEach((prog, idx) => {
+        const isBest = (bestMoveObj && bestMoveObj.gotiIdx === idx);
+        const gotiEl = createGotiElement('my', idx, isBest);
+
+        if (prog === -1) {
+          document.getElementById(`my_slot_${idx}`).appendChild(gotiEl);
+        } else if (prog >= 0 && prog <= 50) {
+          const ringIdx = getRingIndex('my', prog);
+          ringOccupants[ringIdx] = ringOccupants[ringIdx] || [];
+          ringOccupants[ringIdx].push(gotiEl);
+        } else if (prog >= 51 && prog <= 55) {
+          const hIdx = prog - 51;
+          redHomeOccupants[hIdx] = redHomeOccupants[hIdx] || [];
+          redHomeOccupants[hIdx].push(gotiEl);
+        } else if (prog >= 56) {
+          wonOccupants.push(gotiEl);
+        }
+      });
+
+      // Place Opponent Gotis
+      oppState.forEach((prog, idx) => {
+        const gotiEl = createGotiElement('opp', idx, false);
+
+        if (prog === -1) {
+          document.getElementById(`opp_slot_${idx}`).appendChild(gotiEl);
+        } else if (prog >= 0 && prog <= 50) {
+          const ringIdx = getRingIndex('opp', prog);
+          ringOccupants[ringIdx] = ringOccupants[ringIdx] || [];
+          ringOccupants[ringIdx].push(gotiEl);
+        } else if (prog >= 51 && prog <= 55) {
+          const hIdx = prog - 51;
+          yellowHomeOccupants[hIdx] = yellowHomeOccupants[hIdx] || [];
+          yellowHomeOccupants[hIdx].push(gotiEl);
+        } else if (prog >= 56) {
+          wonOccupants.push(gotiEl);
+        }
+      });
+
+      // Mount into DOM with multi-stack styling
+      Object.entries(ringOccupants).forEach(([ringIdx, gotis]) => {
+        mountGotis(`ring_${ringIdx}`, gotis);
+      });
+      Object.entries(redHomeOccupants).forEach(([hIdx, gotis]) => {
+        mountGotis(`red_home_${hIdx}`, gotis);
+      });
+      Object.entries(yellowHomeOccupants).forEach(([hIdx, gotis]) => {
+        mountGotis(`yellow_home_${hIdx}`, gotis);
+      });
+
+      // Mount Won
+      wonOccupants.forEach(g => document.getElementById('centerTokens').appendChild(g));
+    }
+
+    function mountGotis(containerId, gotis) {
+      const container = document.getElementById(containerId);
+      if (!container) return;
+      const wrapper = document.createElement('div');
+      wrapper.className = `stack-wrapper ${gotis.length > 1 ? 'multi' : ''}`;
+      gotis.forEach(g => wrapper.appendChild(g));
+      container.appendChild(wrapper);
+    }
+
+    function createGotiElement(player, idx, isBest) {
+      const div = document.createElement('div');
+      div.className = `goti goti-${player === 'my' ? 'red' : 'yellow'}`;
+      div.textContent = idx + 1;
+      div.dataset.player = player;
+      div.dataset.idx = idx;
+
+      if (isBest) {
+        div.classList.add('best-goti-highlight');
+      }
+
+      div.onclick = (e) => {
+        e.stopPropagation();
+        handleGotiClick(player, idx);
+      };
+
+      return div;
+    }
+
+    /* Haptic Feedback Helper for smooth tactile mobile response */
+    function triggerHaptic(type = 'light') {
+      if ('vibrate' in navigator) {
+        try {
+          if (type === 'light') navigator.vibrate(14);
+          else if (type === 'medium') navigator.vibrate(26);
+          else if (type === 'heavy') navigator.vibrate([35, 30, 60]);
+        } catch (e) {}
+      }
+    }
+
+    /* ==========================================================================
+       ONE-CLICK DIRECT MOVE ACTION (WHEN CLICKING GOTI ON BOARD)
+       ========================================================================== */
+    function handleGotiClick(player, idx) {
+      saveHistory();
+
+      // IF USER CLICKED OPPONENT GOTI:
+      if (player === 'opp') {
+        if (!currentOppDice) {
+          alert("Pehle upar Opponent Dice (1-6) select karo!");
+          return;
+        }
+        triggerHaptic('medium');
+        executeMove('opp', idx, currentOppDice);
+        // Clear opp dice selection
+        currentOppDice = null;
+        document.querySelectorAll('.dice-btn-opp').forEach(b => b.classList.remove('selected'));
+        document.getElementById('oppDiceStatus').textContent = 'DICE: -';
+        checkPostMoveStatus();
+        return;
+      }
+
+      // IF USER CLICKED RED GOTI:
+      if (player === 'my') {
+        if (!currentMyDice) {
+          alert("Pehle niche apna Dice (1-6) select karo!");
+          return;
+        }
+        triggerHaptic('medium');
+        executeMove('my', idx, currentMyDice);
+        // Clear my dice selection
+        clearMyDiceSelection();
+        checkPostMoveStatus();
+      }
+    }
+
+    function executeMove(player, idx, dice) {
+      const stateArr = player === 'my' ? myState : oppState;
+      const otherArr = player === 'my' ? oppState : myState;
+      const curProg = stateArr[idx];
+
+      // If in yard (-1)
+      if (curProg === -1) {
+        if (dice === 6) {
+          stateArr[idx] = 0; // Enter starting square!
+        } else {
+          alert(`Goti #${idx + 1} ghar me hai! Nikalne ke liye 6 chahiye.`);
+          return;
+        }
+      } else {
+        const nextProg = curProg + dice;
+        if (nextProg > 56) {
+          alert("Overshoot! Jitne ke liye exact dice chahiye.");
+          return;
+        }
+        stateArr[idx] = nextProg;
+
+        // Check KILL if landing on outer ring (0 to 50)
+        if (nextProg <= 50) {
+          const targetRingIdx = getRingIndex(player, nextProg);
+
+          // Is it safe?
+          if (!isSafeRingIndex(targetRingIdx)) {
+            // Check if any opponent goti is on this ring square
+            otherArr.forEach((oppProg, oppIdx) => {
+              if (oppProg >= 0 && oppProg <= 50) {
+                const oppRingIdx = getRingIndex(player === 'my' ? 'opp' : 'my', oppProg);
+                if (oppRingIdx === targetRingIdx) {
+                  // KAAT DIYA! Send back to yard!
+                  otherArr[oppIdx] = -1;
+                  triggerHaptic('heavy');
+                  triggerKillCelebration(player, idx + 1, oppIdx + 1);
+                }
+              }
+            });
+          }
+        }
+      }
+
+      renderAllGotis();
+    }
+
+    function triggerKillCelebration(killerPlayer, killerIdx, victimIdx) {
+      const banner = document.getElementById('suggReason');
+      if (killerPlayer === 'my') {
+        showKillToast('🔥 KAAT DIYA!', `Opponent ki Goti #${victimIdx} ghar bheji! +Bonus Turn`);
+        banner.innerHTML = `<span style="color:#ff3366;font-size:1rem;">🔥 ZABARDAST! Opponent ki Goti #${victimIdx} ko kaat diya!</span>`;
+      } else {
+        banner.innerHTML = `<span style="color:#ffbb00;">⚠️ Opponent ne aapki Goti #${victimIdx} ko kaat diya!</span>`;
+      }
+    }
+
+    /* ==========================================================================
+       DICE CONTROLS & AUTOMATIC AI ADVISOR
+       ========================================================================== */
+    function setOppDice(num) {
+      triggerHaptic('light');
+
+      // ── 3-SIX BUST CHECK FOR OPPONENT ──────────────────────────────
+      if (num === 6) {
+        oppConsecutiveSixes++;
+        if (oppConsecutiveSixes >= 3) {
+          oppConsecutiveSixes = 0;  // Reset after bust
+          currentOppDice = null;
+          document.querySelectorAll('.dice-btn-opp').forEach(b => b.classList.remove('selected'));
+          document.getElementById('oppDiceStatus').textContent = 'DICE: BUST! ❌';
+          // Show bust toast for opponent
+          showBustToast('opp');
+          // Recalculate suggestion (our advantage!)
+          if (currentMyDice) calculateBestMove(currentMyDice);
+          return;
+        }
+      } else {
+        oppConsecutiveSixes = 0; // Reset on non-6 roll
+      }
+      // ────────────────────────────────────────────────────────────────
+
+      currentOppDice = num;
+      document.querySelectorAll('.dice-btn-opp').forEach(b => b.classList.remove('selected'));
+      event.target.classList.add('selected');
+      document.getElementById('oppDiceStatus').textContent =
+        num === 6
+          ? `DICE: 6 (${oppConsecutiveSixes}/3 sixes) ➔ Goti chalo`
+          : `DICE: ${num} ➔ Goti chalo`;
+    }
+
+    function setMyDice(num) {
+      triggerHaptic('light');
+
+      // ── 3-SIX BUST CHECK FOR MY TURN ───────────────────────────────
+      if (num === 6) {
+        myConsecutiveSixes++;
+        if (myConsecutiveSixes >= 3) {
+          myConsecutiveSixes = 0; // Reset after bust
+          triggerHaptic('heavy');
+          // Clear dice state
+          currentMyDice = null;
+          document.querySelectorAll('.dice-btn-my').forEach(b => b.classList.remove('selected'));
+          document.getElementById('myDiceStatus').textContent = 'DICE: BUST! ❌';
+          document.getElementById('suggMain').innerHTML =
+            `<span style="color:#ff4444;font-size:1.1rem;">💥 BUST! Teen 6 aye — Turn Forfeit!</span>`;
+          document.getElementById('suggReason').innerHTML =
+            `<span style="color:#ffbb00;">Rule: Lagatar 3 six = Ghar se koi goti nahi chalti. Opponent ka turn.</span>`;
+          document.getElementById('suggScore').textContent = 'BUST';
+          document.getElementById('btnAutoMove').style.display = 'none';
+          const altContainer = document.getElementById('altPlansRow');
+          if (altContainer) altContainer.style.display = 'none';
+          // Show bust toast
+          showBustToast('my');
+          renderAllGotis();
+          return;
+        }
+      } else {
+        myConsecutiveSixes = 0; // Non-6 roll resets the counter
+      }
+      // ────────────────────────────────────────────────────────────────
+
+      currentMyDice = num;
+      document.querySelectorAll('.dice-btn-my').forEach(b => b.classList.remove('selected'));
+      const activeBtn = document.getElementById(`my_d_${num}`);
+      if (activeBtn) activeBtn.classList.add('selected');
+      document.getElementById('myDiceStatus').textContent =
+        num === 6
+          ? `DICE: 6 🎯 (${myConsecutiveSixes}/3 sixes — Chal chalo!)`
+          : `DICE: ${num}`;
+
+      // Reset opp consecutive counter when my dice is set (new round)
+      if (num !== 6) oppConsecutiveSixes = 0;
+
+      // AUTOMATIC ENGINE: Instantly calculate best move
+      calculateBestMove(num);
+    }
+
+    let currentGameMode = 'classic'; // 'classic' or 'zupee'
+
+    function toggleGameMode() {
+      currentGameMode = (currentGameMode === 'classic') ? 'zupee' : 'classic';
+      const pillC = document.getElementById('modePillClassic');
+      const pillZ = document.getElementById('modePillZupee');
+      if (currentGameMode === 'zupee') {
+        pillC.classList.remove('active');
+        pillZ.classList.add('active');
+      } else {
+        pillZ.classList.remove('active');
+        pillC.classList.add('active');
+      }
+      if (currentMyDice) calculateBestMove(currentMyDice);
+    }
+
+    function clearMyDiceSelection() {
+      currentMyDice = null;
+      bestMoveObj = null;
+      document.querySelectorAll('.dice-btn-my').forEach(b => b.classList.remove('selected'));
+      document.getElementById('myDiceStatus').textContent = 'DICE: -';
+      document.getElementById('suggMain').innerHTML = `<span>Chal ho gayi! Agla dice chuno.</span>`;
+      document.getElementById('suggReason').innerHTML = `<span>➡️ Ready for next move</span>`;
+      document.getElementById('suggScore').textContent = 'READY';
+      document.getElementById('btnAutoMove').style.display = 'none';
+      const altContainer = document.getElementById('altPlansRow');
+      if (altContainer) altContainer.style.display = 'none';
+      renderAllGotis();
+    }
+
+    /* ==========================================================================
+       ████████╗ GODMODE v3 ENGINE — WORLD CHAMPION LEVEL ████████╗
+       Strategy Layers:
+         1. Immediate Kill + Bonus Turn
+         2. Goal / Home Lane Rush
+         3. BLOCKADE FORMATION (2 gotis = wall — opponent can't pass!)
+         4. START-SQUARE AMBUSH (sit near opponent's start to kill on 6)
+         5. ANTI-6 SHIELD (evaluate: what if opponent gets 6-6-6?)
+         6. 3-PLY EXPECTIMAX (My Move → All 6 Opp Rolls → My Best Counter)
+         7. DEAD TRAP CONE (no safe escape for opponent)
+         8. GOLDEN DISTANCE 7–8 (100% safe from single-roll kill)
+         9. PREDATORY HUNTER (lock onto opponent)
+        10. WOLFPACK FORMATION (group attack)
+        11. PRESSURE MULTIPLIER (more opponent gotis in danger = more bonus)
+        12. AGGRESSIVE FORWARD PROGRESS
+       ========================================================================== */
+
+
+
+    // Calculate exact forward distance on 52-ring between two ring positions (from A to B)
+    function ringDistance(fromRing, toRing) {
+      return (toRing - fromRing + 52) % 52;
+    }
+
+    // Helper: simulate opponent's best move for a given state
+    function simOppBestMove(oState, oIdx, oRoll) {
+      // Returns new oProgress after opponent plays oIdx with oRoll, or -99 if invalid
+      const p = oState[oIdx];
+      if (p === -1) return (oRoll === 6) ? 0 : -99;
+      if (p >= 56) return -99;
+      if (p + oRoll > 56) return -99;
+      return p + oRoll;
+    }
+
+    // Helper: check if a ring index is a blockade (2+ of MY gotis there)
+    function isMyBlockade(ringIdx) {
+      let count = 0;
+      myState.forEach(p => {
+        if (p >= 0 && p <= 50) {
+          if (getRingIndex('my', p) === ringIdx) count++;
+        }
+      });
+      return count >= 2;
+    }
+
+    // Helper: How many of opponent's gotis are "dangerously exposed" (in 1-6 kill range of any my goti)
+    function oppExposedCount(myArr, oppArr) {
+      let exposed = 0;
+      oppArr.forEach(oProg => {
+        if (oProg < 0 || oProg > 50) return;
+        const oRing = getRingIndex('opp', oProg);
+        myArr.forEach(mProg => {
+          if (mProg < 0 || mProg > 50) return;
+          const mRing = getRingIndex('my', mProg);
+          const d = ringDistance(mRing, oRing);
+          if (d >= 1 && d <= 6 && !isSafeRingIndex(oRing)) exposed++;
+        });
+      });
+      return exposed;
+    }
+
+    // Helper: opponent start ring index for 'opp' (yellow starts at ring 26)
+    const OPP_START_RING = 26;
+
+    // GODMODE v3: Comprehensive move evaluator
+    function deepEvaluateCandidateMove(gotiIdx, dice) {
+      const curProg = myState[gotiIdx];
+      if (curProg >= 56) return null; // Already won
+
+      let nextProg = -1;
+      let isUnlock = false;
+
+      if (curProg === -1) {
+        if (dice === 6) { nextProg = 0; isUnlock = true; }
+        else return null;
+      } else {
+        if (curProg + dice > 56) return null; // Overshoot
+        nextProg = curProg + dice;
+      }
+
+      const nextRingIdx = (nextProg >= 0 && nextProg <= 50) ? getRingIndex('my', nextProg) : null;
+      const curRingIdx  = (curProg  >= 0 && curProg  <= 50) ? getRingIndex('my', curProg)  : null;
+      const landsOnStar = (nextRingIdx !== null && isSafeRingIndex(nextRingIdx));
+      const landsInHome = (nextProg >= 51);
+      const landsInGoal = (nextProg === 56);
+
+      let score = 0;
+      let killerVictimIdx = null;
+      let primaryTag = "SAFE PROGRESS";
+      let tacticalHeadline = "➡️ Safe chal";
+
+      // ────────────────────────────────────────────────────────────────
+      // LAYER 1 — IMMEDIATE KILL + BONUS TURN (highest priority)
+      // ────────────────────────────────────────────────────────────────
+      let killsOpponent = false;
+      if (nextRingIdx !== null && !landsOnStar) {
+        oppState.forEach((oProg, oIdx) => {
+          if (oProg >= 0 && oProg <= 50) {
+            const oRing = getRingIndex('opp', oProg);
+            if (oRing === nextRingIdx) {
+              killerVictimIdx = oIdx;
+              killsOpponent = true;
+              const progressBonus = oProg * 50; // The further opponent was, more valuable the kill
+              score += 2800 + progressBonus + 900; // kill + bonus turn (boosted from simulation data)
+              primaryTag = "KILL";
+              tacticalHeadline = `🔥 GUARANTEED KILL! Opponent Goti #${oIdx+1} ghar bheja! (+${3700+progressBonus} pts + Free Turn)`;
+            }
+          }
+        });
+      }
+
+      // ────────────────────────────────────────────────────────────────
+      // LAYER 2 — GOAL / HOME LANE RUSH
+      // ────────────────────────────────────────────────────────────────
+      if (landsInGoal) {
+        score += 2000 + 600; // goal + extra turn
+        primaryTag = "GOAL";
+        tacticalHeadline = `👑 JEET GAYI GOTI! Home Pocket pakki — +Extra Turn!`;
+      } else if (landsInHome) {
+        const homeLanePts = 1100 + (nextProg - 50) * 80;
+        score += homeLanePts;
+        primaryTag = "HOME";
+        tacticalHeadline = `🏠 HOME LANE PRAVESH! 100% Surakshit — opponent kuch nahi kar sakta`;
+      } else if (landsOnStar) {
+        score += 900;
+        primaryTag = "STAR";
+        tacticalHeadline = `🛡️ STAR FORTRESS! Dushman haath bhi nahi laga sakta`;
+      }
+
+      // ────────────────────────────────────────────────────────────────
+      // LAYER 3 — BLOCKADE FORMATION (2 gotis on same square = WALL)
+      // Board rule: Opponent CANNOT cross a blockade of 2+ same-color gotis
+      // ────────────────────────────────────────────────────────────────
+      if (nextRingIdx !== null && !landsOnStar) {
+        // Count how many of my other gotis are already at nextRingIdx
+        let blockadeCount = 0;
+        myState.forEach((p, idx) => {
+          if (idx !== gotiIdx && p >= 0 && p <= 50) {
+            if (getRingIndex('my', p) === nextRingIdx) blockadeCount++;
+          }
+        });
+        if (blockadeCount >= 1) {
+          // Forming a blockade! Massive bonus — opponent's path is BLOCKED
+          score += 1400;
+          // Extra bonus if the blockade is in opponent's path (ahead of them)
+          let blocksOpp = false;
+          oppState.forEach(oProg => {
+            if (oProg >= 0 && oProg <= 50) {
+              const oRing = getRingIndex('opp', oProg);
+              const toBlockade = ringDistance(oRing, nextRingIdx);
+              if (toBlockade >= 1 && toBlockade <= 20) blocksOpp = true; // blockade is ahead of opponent
+            }
+          });
+          if (blocksOpp) score += 800; // Actively blocking opponent's road!
+          if (primaryTag === "SAFE PROGRESS" || primaryTag === "GOLDEN") {
+            primaryTag = "BLOCKADE";
+            tacticalHeadline = `🧱 BLOCKADE BANAYI! 2 Gotiyan ek jagah — Opponent raasta band! (+${blockadeCount >= 1 ? 2200 : 1400} pts)`;
+          }
+        }
+
+        // Check if we land on opponent's existing blockade — avoid it!
+        let oppBlockadeCount = 0;
+        oppState.forEach(oProg => {
+          if (oProg >= 0 && oProg <= 50) {
+            if (getRingIndex('opp', oProg) === nextRingIdx) oppBlockadeCount++;
+          }
+        });
+        if (oppBlockadeCount >= 2) {
+          score -= 9999; // Impossible move — can't land on opponent's blockade
+        }
+      }
+
+      // ────────────────────────────────────────────────────────────────
+      // LAYER 4 — START-SQUARE AMBUSH
+      // If opponent has gotis in yard, sit near their start (ring 26) to 
+      // instantly kill when they roll 6
+      // ────────────────────────────────────────────────────────────────
+      const oppGotisInYard = oppState.filter(p => p === -1).length;
+      if (oppGotisInYard > 0 && nextRingIdx !== null && !landsOnStar) {
+        const distToOppStart = ringDistance(nextRingIdx, OPP_START_RING);
+        if (distToOppStart >= 1 && distToOppStart <= 6) {
+          // Sitting in kill range of opponent's start! They roll 6 → we KILL
+          const ambushBonus = 1400 + oppGotisInYard * 350; // TRIPLED from sim data: 600→1400
+          score += ambushBonus;
+          if (primaryTag === "SAFE PROGRESS" || primaryTag === "GOLDEN") {
+            primaryTag = "AMBUSH";
+            tacticalHeadline = `🎯 START-SQUARE AMBUSH! Opponent 6 laaye → Immediately kaat denge! (${oppGotisInYard} goti yard mein)`;
+          }
+        }
+      }
+
+      // ────────────────────────────────────────────────────────────────
+      // LAYER 5 — ANTI-6 SHIELD: Simulate opponent getting 6-6-6
+      // For each of opponent's gotis, simulate 3 consecutive 6s
+      // Penalize heavily if any of those chain-moves reaches my next position
+      // ────────────────────────────────────────────────────────────────
+      if (nextRingIdx !== null && !landsOnStar) {
+        let sixChainThreat = 0;
+        oppState.forEach((oProg, oIdx) => {
+          // Simulate: current opp goti + 6 (turn 1 from yard or board)
+          let oAfter6;
+          if (oProg === -1) oAfter6 = 0; // unlocked by 6
+          else if (oProg >= 0 && oProg <= 50) oAfter6 = oProg + 6;
+          else oAfter6 = -1;
+
+          if (oAfter6 >= 0 && oAfter6 <= 50) {
+            const oAfter6Ring = getRingIndex('opp', oAfter6);
+            // Direct kill after one 6?
+            const d1 = ringDistance(oAfter6Ring, nextRingIdx);
+            if (d1 === 0 && !isSafeRingIndex(nextRingIdx)) sixChainThreat += 3; // direct kill
+            else if (d1 >= 1 && d1 <= 6) sixChainThreat += 2; // kill possible with bonus roll
+
+            // Simulate second 6 (bonus turn after first 6)
+            const oAfter12 = oAfter6 + 6;
+            if (oAfter12 <= 50) {
+              const oAfter12Ring = getRingIndex('opp', oAfter12);
+              const d2 = ringDistance(oAfter12Ring, nextRingIdx);
+              if (d2 === 0 && !isSafeRingIndex(nextRingIdx)) sixChainThreat += 2;
+              else if (d2 >= 1 && d2 <= 6) sixChainThreat += 1;
+            }
+          }
+        });
+        if (sixChainThreat > 0) {
+          score -= sixChainThreat * 650; // STRENGTHENED from sim data: 380→650 (heavier anti-6 defense)
+        }
+      }
+
+      // ────────────────────────────────────────────────────────────────
+      // LAYER 6 — 3-PLY EXPECTIMAX LOOKAHEAD
+      // My move → All 6 opponent rolls → best opponent response → 
+      //   my best counter-move (all 6 my rolls)
+      // ────────────────────────────────────────────────────────────────
+      let killVulnerabilityCount = 0;
+      if (nextRingIdx !== null && !landsOnStar) {
+        // PLY 1: Can opponent kill me next turn?
+        oppState.forEach((oProg, oIdx) => {
+          if (oProg >= 0 && oProg <= 50) {
+            const oRing = getRingIndex('opp', oProg);
+            const dist = ringDistance(oRing, nextRingIdx);
+            if (dist >= 1 && dist <= 6) {
+              killVulnerabilityCount++;
+              const investmentLoss = 600 + (nextProg * 30);
+              score -= investmentLoss;
+            }
+          }
+          // Special: opponent in yard with a 6-unlock threat
+          if (oProg === -1) {
+            const unlockDist = ringDistance(OPP_START_RING, nextRingIdx);
+            if (unlockDist === 0 && !isSafeRingIndex(nextRingIdx)) {
+              killVulnerabilityCount++;
+              score -= 400; // Could be killed if they roll 6 and land on us
+            }
+          }
+        });
+      }
+
+      // PLY 2: For each opponent roll, find their best move, then simulate my best counter
+      if (nextRingIdx !== null) {
+        let ply2NetBonus = 0;
+        for (let oppRoll = 1; oppRoll <= 6; oppRoll++) {
+          // Find best opponent response to my move
+          let bestOppKillVal = 0;
+          oppState.forEach((oProg, oIdx) => {
+            if (oProg === -1 && oppRoll === 6) {
+              // Opponent unlocks — check if start square is my square
+              const unlockRing = OPP_START_RING;
+              if (unlockRing === nextRingIdx && !isSafeRingIndex(nextRingIdx)) bestOppKillVal = 600;
+            } else if (oProg >= 0 && oProg <= 50) {
+              const oNewProg = oProg + oppRoll;
+              if (oNewProg <= 50) {
+                const oNewRing = getRingIndex('opp', oNewProg);
+                if (oNewRing === nextRingIdx && !isSafeRingIndex(nextRingIdx)) {
+                  bestOppKillVal = Math.max(bestOppKillVal, 500 + nextProg * 20);
+                }
+              }
+            }
+          });
+
+          // PLY 3: My best counter-response (for each of my 6 rolls)
+          let myBestCounterScore = 0;
+          for (let myRoll = 1; myRoll <= 6; myRoll++) {
+            // Simulate: after this move is done, what's the best I can do next turn?
+            myState.forEach((mProg, mIdx) => {
+              if (mIdx === gotiIdx) {
+                // This goti is now at nextProg
+                const mNextProg = nextProg + myRoll;
+                if (mNextProg <= 56) {
+                  // Can I kill any opponent?
+                  if (mNextProg <= 50) {
+                    const mNextRing = getRingIndex('my', mNextProg);
+                    oppState.forEach(oP => {
+                      if (oP >= 0 && oP <= 50) {
+                        const oR = getRingIndex('opp', oP);
+                        if (oR === mNextRing && !isSafeRingIndex(mNextRing)) {
+                          myBestCounterScore = Math.max(myBestCounterScore, 400);
+                        }
+                      }
+                    });
+                  }
+                  if (mNextProg >= 51) myBestCounterScore = Math.max(myBestCounterScore, 350);
+                }
+              }
+            });
+          }
+
+          // Net: opponent threat minus my counter
+          ply2NetBonus += (myBestCounterScore - bestOppKillVal) * (1/6);
+        }
+        score += Math.round(ply2NetBonus);
+      }
+
+      // ────────────────────────────────────────────────────────────────
+      // LAYER 7 — DEAD TRAP CONE (no safe escape possible for opponent)
+      // ────────────────────────────────────────────────────────────────
+      if (nextRingIdx !== null) {
+        oppState.forEach((oProg, oIdx) => {
+          if (oProg >= 0 && oProg <= 50) {
+            const oRing = getRingIndex('opp', oProg);
+            const huntDist = ringDistance(nextRingIdx, oRing);
+            if (huntDist >= 1 && huntDist <= 6) {
+              let canEscape = false;
+              for (let r = 1; r <= 6; r++) {
+                const esc = oProg + r;
+                if (esc > 50) { canEscape = true; break; } // enters home lane
+                const escRing = getRingIndex('opp', esc);
+                if (isSafeRingIndex(escRing)) { canEscape = true; break; }
+                // Check if escape square is ALSO in range of another my goti
+                let stillTrapped = false;
+                myState.forEach((mP, mI) => {
+                  if (mI !== gotiIdx && mP >= 0 && mP <= 50) {
+                    const mR = getRingIndex('my', mP);
+                    if (ringDistance(mR, escRing) <= 6) stillTrapped = true;
+                  }
+                });
+                if (!stillTrapped) canEscape = true;
+              }
+              if (!canEscape) {
+                score += 1200; // PERFECT TRAP — no way out!
+                primaryTag = "TRAP";
+                tacticalHeadline = `🎯 ZERO ESCAPE! Opponent Goti #${oIdx+1} kisi bhi roll pe mar jayegi! (+1200)`;
+              } else {
+                score += 500;
+                if (primaryTag === "SAFE PROGRESS" || primaryTag === "GOLDEN") {
+                  primaryTag = "HUNTER";
+                  tacticalHeadline = `⚔️ HUNT MODE! Opponent #${oIdx+1} ke peeche lag gaye`;
+                }
+              }
+            }
+          }
+        });
+      }
+
+      // ────────────────────────────────────────────────────────────────
+      // LAYER 8 — GOLDEN DISTANCE 7–8 (statistically unkillable in 1 turn)
+      // ────────────────────────────────────────────────────────────────
+      if (nextRingIdx !== null && !landsOnStar && killVulnerabilityCount === 0) {
+        let goldenCount = 0;
+        oppState.forEach(oProg => {
+          if (oProg >= 0 && oProg <= 50) {
+            const oRing = getRingIndex('opp', oProg);
+            const d = ringDistance(oRing, nextRingIdx);
+            if (d === 7 || d === 8) goldenCount++;
+          }
+        });
+        if (goldenCount > 0) {
+          score += 450 * goldenCount;
+          if (primaryTag === "SAFE PROGRESS") {
+            primaryTag = "GOLDEN";
+            tacticalHeadline = `🏅 GOLDEN ZONE 7! ${goldenCount} opponent${goldenCount>1?' gotis':' goti'} me se koi bhi 1-roll me touch nahi kar sakti`;
+          }
+        }
+      }
+
+      // ────────────────────────────────────────────────────────────────
+      // LAYER 9 — ESCAPE FROM DANGER
+      // ────────────────────────────────────────────────────────────────
+      let wasInDanger = false;
+      if (curRingIdx !== null && !isSafeRingIndex(curRingIdx)) {
+        oppState.forEach(oProg => {
+          if (oProg >= 0 && oProg <= 50) {
+            const oRing = getRingIndex('opp', oProg);
+            if (ringDistance(oRing, curRingIdx) >= 1 && ringDistance(oRing, curRingIdx) <= 6) wasInDanger = true;
+          }
+        });
+      }
+      if (wasInDanger && killVulnerabilityCount === 0) {
+        score += 550;
+        if (primaryTag === "SAFE PROGRESS") {
+          primaryTag = "ESCAPE";
+          tacticalHeadline = `🏃 KHATARE SE BHAAG! Enemy kill-zone se surakshit nikal gaye`;
+        }
+      }
+
+      // ────────────────────────────────────────────────────────────────
+      // LAYER 10 — WOLFPACK: My gotis near this one = mutual cover
+      // ────────────────────────────────────────────────────────────────
+      myState.forEach((otherP, oIdx) => {
+        if (oIdx !== gotiIdx && otherP >= 0 && otherP <= 55) {
+          const gap = Math.abs(nextProg - otherP);
+          if (gap >= 1 && gap <= 5) score += 160; // tight wolfpack
+          else if (gap >= 6 && gap <= 12) score += 70; // loose cover
+        }
+      });
+
+      // Revenge cover — if I'm vulnerable, do other gotis cover me?
+      if (killVulnerabilityCount > 0 && nextRingIdx !== null) {
+        myState.forEach((myProg, mIdx) => {
+          if (mIdx !== gotiIdx && myProg >= 0 && myProg <= 50) {
+            const myOtherRing = getRingIndex('my', myProg);
+            const d = ringDistance(myOtherRing, nextRingIdx);
+            if (d >= 1 && d <= 6) score += 350; // covered by another goti
+          }
+        });
+      }
+
+      // ────────────────────────────────────────────────────────────────
+      // LAYER 11 — PRESSURE MULTIPLIER
+      // More opponent gotis in danger = multiply all attack bonuses
+      // ────────────────────────────────────────────────────────────────
+      // Simulate next state (myState after this move)
+      const hypotheticalMy = [...myState];
+      hypotheticalMy[gotiIdx] = nextProg;
+      const pressureAfter = oppExposedCount(hypotheticalMy, oppState);
+      score += pressureAfter * 180; // Each exposed opp goti = +180
+
+      // ────────────────────────────────────────────────────────────────
+      // LAYER 12 — FORWARD PROGRESSION + YARD UNLOCK
+      // ────────────────────────────────────────────────────────────────
+      score += nextProg * 4;
+
+      if (isUnlock) {
+        score += 550 + 400; // New piece + bonus turn
+        if (primaryTag === "SAFE PROGRESS" || primaryTag === "GOLDEN") {
+          primaryTag = "UNLOCK";
+          tacticalHeadline = `🔓 NAYA SAINIK! Board par aaya — agle turn bonus roll bhi milega`;
+        }
+      }
+
+      // Zupee mode override
+      if (currentGameMode === 'zupee') {
+        score += nextProg * 8;
+        if (landsInHome) score += 700;
+        if (killVulnerabilityCount > 0) score -= 400;
+      }
+
+      return {
+        gotiIdx,
+        curPos: curProg,
+        nextPos: nextProg,
+        score,
+        primaryTag,
+        tacticalHeadline,
+        killVulnerabilityCount
+      };
+    }
+
+    /* Full evaluation across all 4 tokens with Plan A, B, C Alternatives */
+    function calculateBestMove(dice) {
+      let candidateMoves = [];
+
+      for (let i = 0; i < 4; i++) {
+        const evalRes = deepEvaluateCandidateMove(i, dice);
+        if (evalRes) {
+          candidateMoves.push(evalRes);
+        }
+      }
+
+      const altContainer = document.getElementById('altPlansRow');
+
+      if (candidateMoves.length === 0) {
+        bestMoveObj = null;
+        document.getElementById('suggMain').innerHTML = `<span>Koi chal sambhav nahi (Dice: ${dice})</span>`;
+        document.getElementById('suggReason').innerHTML = `<span>Turn pass karein</span>`;
+        document.getElementById('suggScore').textContent = 'NO MOVE';
+        document.getElementById('btnAutoMove').style.display = 'none';
+        if (altContainer) altContainer.style.display = 'none';
+        renderAllGotis();
+        return;
+      }
+
+      // Sort by grandmaster score descending
+      candidateMoves.sort((a, b) => b.score - a.score);
+      bestMoveObj = candidateMoves[0];
+
+      // Update Plan A, B, C Alternatives UI
+      if (altContainer) {
+        altContainer.innerHTML = '';
+        if (candidateMoves.length > 1) {
+          altContainer.style.display = 'grid';
+          candidateMoves.slice(0, 3).forEach((m, idx) => {
+            const planLabel = idx === 0 ? 'Plan A (Best)' : (idx === 1 ? 'Plan B' : 'Plan C');
+            const btn = document.createElement('div');
+            btn.className = `alt-plan-btn ${idx === 0 ? 'plan-best' : ''}`;
+            btn.id = `plan_btn_${idx}`;
+            btn.innerHTML = `
+              <span>${planLabel}</span>
+              <span style="color:#fff;font-weight:900;">Goti #${m.gotiIdx + 1}</span>
+              <span style="font-size:0.6rem;color:#00f2fe;">+${m.score}</span>
+            `;
+            btn.onclick = () => {
+              selectAlternativePlan(m, idx, candidateMoves);
+            };
+            altContainer.appendChild(btn);
+          });
+        } else {
+          altContainer.style.display = 'none';
+        }
+      }
+
+      displaySelectedPlan(bestMoveObj);
+    }
+
+    function selectAlternativePlan(m, selectedIdx, allCandidates) {
+      bestMoveObj = m;
+      document.querySelectorAll('.alt-plan-btn').forEach((b, i) => {
+        if (i === selectedIdx) b.classList.add('plan-best');
+        else b.classList.remove('plan-best');
+      });
+      displaySelectedPlan(m);
+      renderAllGotis();
+    }
+
+    function displaySelectedPlan(m) {
+      triggerSuggAnim(); // Smooth slide-in animation
+      let winProb = calculateWinProbability();
+      const fillEl = document.getElementById('winProbFill');
+      if (fillEl) fillEl.style.width = winProb + '%';
+
+      const winChanceEl = document.getElementById('winChancePill');
+      if (winChanceEl) winChanceEl.textContent = `WIN: ${winProb}%`;
+
+      document.getElementById('suggScore').innerHTML = `
+        <span style="color:#ffd700;font-weight:900;">+${m.score} pts</span>
+      `;
+
+      document.getElementById('suggMain').innerHTML = `
+        <span>👉 YE CHALO:</span>
+        <span class="target-goti-pill">Goti #${m.gotiIdx + 1}</span>
+      `;
+
+      document.getElementById('suggReason').innerHTML = `
+        <span style="color:#69f0ae;font-size:0.72rem;font-weight:800;">${m.tacticalHeadline}</span>
+      `;
+
+      document.getElementById('btnAutoMove').style.display = 'flex';
+      renderAllGotis();
+    }
+
+    // Dynamic Victory Probability (calculates board state advantage)
+    function calculateWinProbability() {
+      let myTotalProgress = myState.reduce((acc, p) => acc + (p === -1 ? 0 : (p === 56 ? 70 : p + 5)), 0);
+      let oppTotalProgress = oppState.reduce((acc, p) => acc + (p === -1 ? 0 : (p === 56 ? 70 : p + 5)), 0);
+
+      let diff = myTotalProgress - oppTotalProgress;
+      let prob = 50 + (diff * 0.45);
+      prob = Math.max(15, Math.min(99, Math.round(prob)));
+      return prob;
+    }
+
+    function applyBestMove() {
+      if (bestMoveObj && currentMyDice) {
+        handleGotiClick('my', bestMoveObj.gotiIdx);
+      }
+    }
+
+    function checkPostMoveStatus() {
+      // Refresh advice if my dice is still active
+      if (currentMyDice) {
+        calculateBestMove(currentMyDice);
+      }
+    }
+
+    /* ==========================================================================
+       BOARD CLICK TO DIRECTLY PLACE (FAST SETUP)
+       ========================================================================== */
+    function onCellClicked(type, index) {
+      // Optional manual tap helper if user wants to place a token directly
+    }
+
+    /* ==========================================================================
+       HISTORY / UNDO & RESET
+       ========================================================================== */
+    function saveHistory() {
+      historyStack.push({
+        my: [...myState],
+        opp: [...oppState],
+        myDice: currentMyDice,
+        oppDice: currentOppDice
+      });
+      if (historyStack.length > 20) historyStack.shift();
+    }
+
+    document.getElementById('btnUndo').onclick = () => {
+      triggerHaptic('light');
+      if (historyStack.length === 0) {
+        alert("Pehle koi chal to chalo!");
+        return;
+      }
+      const prev = historyStack.pop();
+      myState = [...prev.my];
+      oppState = [...prev.opp];
+      currentMyDice = null;
+      currentOppDice = null;
+      bestMoveObj = null;
+      document.querySelectorAll('.dice-btn-my').forEach(b => b.classList.remove('selected'));
+      document.querySelectorAll('.dice-btn-opp').forEach(b => b.classList.remove('selected'));
+      document.getElementById('myDiceStatus').textContent = 'DICE: -';
+      document.getElementById('oppDiceStatus').textContent = 'DICE: -';
+      document.getElementById('suggMain').innerHTML = `<span>Pichli chal undo kar di gayi.</span>`;
+      document.getElementById('suggReason').innerHTML = `<span>➡️ Ready</span>`;
+      document.getElementById('suggScore').textContent = 'READY';
+      document.getElementById('btnAutoMove').style.display = 'none';
+      const altContainer = document.getElementById('altPlansRow');
+      if (altContainer) altContainer.style.display = 'none';
+      renderAllGotis();
+    };
+
+    document.getElementById('btnReset').onclick = () => {
+      if (confirm("Naya Game shuru karein? Sabhi gotiyan ghar (Yard) me chali jayengi.")) {
+        saveHistory();
+        myState = [-1, -1, -1, -1];
+        oppState = [-1, -1, -1, -1];
+        myConsecutiveSixes = 0;   // Reset bust counters
+        oppConsecutiveSixes = 0;
+        clearMyDiceSelection();
+        currentOppDice = null;
+        document.querySelectorAll('.dice-btn-opp').forEach(b => b.classList.remove('selected'));
+        document.getElementById('oppDiceStatus').textContent = 'DICE: -';
+        renderAllGotis();
+      }
+    };
+
+    // PWA Service Worker for 100% offline
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        const swBlob = new Blob([`
+          self.addEventListener('install', e => self.skipWaiting());
+          self.addEventListener('activate', e => clients.claim());
+          self.addEventListener('fetch', e => e.respondWith(fetch(e.request).catch(() => caches.match(e.request))));
+        `], { type: 'application/javascript' });
+        navigator.serviceWorker.register(URL.createObjectURL(swBlob)).catch(()=>{});
+      });
+    }
+
+    // Initialize on load
+    window.addEventListener('DOMContentLoaded', () => {
+      buildBoardDOM();
+    });
+  </script>
+</body>
+</html>
