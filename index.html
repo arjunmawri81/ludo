@@ -788,12 +788,12 @@
         <span id="oppDiceStatus" style="font-weight:900;">DICE: -</span>
       </div>
       <div class="dice-group">
-        <button class="dice-btn-opp" onclick="addRipple(event);setOppDice(1)">1</button>
-        <button class="dice-btn-opp" onclick="addRipple(event);setOppDice(2)">2</button>
-        <button class="dice-btn-opp" onclick="addRipple(event);setOppDice(3)">3</button>
-        <button class="dice-btn-opp" onclick="addRipple(event);setOppDice(4)">4</button>
-        <button class="dice-btn-opp" onclick="addRipple(event);setOppDice(5)">5</button>
-        <button class="dice-btn-opp" onclick="addRipple(event);setOppDice(6)">6</button>
+        <button class="dice-btn-opp" id="opp_d_1" onclick="addRipple(event);setOppDice(1)">1</button>
+        <button class="dice-btn-opp" id="opp_d_2" onclick="addRipple(event);setOppDice(2)">2</button>
+        <button class="dice-btn-opp" id="opp_d_3" onclick="addRipple(event);setOppDice(3)">3</button>
+        <button class="dice-btn-opp" id="opp_d_4" onclick="addRipple(event);setOppDice(4)">4</button>
+        <button class="dice-btn-opp" id="opp_d_5" onclick="addRipple(event);setOppDice(5)">5</button>
+        <button class="dice-btn-opp" id="opp_d_6" onclick="addRipple(event);setOppDice(6)">6</button>
       </div>
     </div>
 
@@ -1310,6 +1310,7 @@
 
       // IF USER CLICKED OPPONENT GOTI:
       if (player === 'opp') {
+        myConsecutiveSixes = 0; // Opponent move ho rha hai, mera counter 0
         if (!currentOppDice) {
           alert("Pehle upar Opponent Dice (1-6) select karo!");
           return;
@@ -1326,6 +1327,7 @@
 
       // IF USER CLICKED RED GOTI:
       if (player === 'my') {
+        oppConsecutiveSixes = 0; // Mera move ho rha hai, opponent counter 0
         if (!currentMyDice) {
           alert("Pehle niche apna Dice (1-6) select karo!");
           return;
@@ -1342,6 +1344,8 @@
       const stateArr = player === 'my' ? myState : oppState;
       const otherArr = player === 'my' ? oppState : myState;
       const curProg = stateArr[idx];
+
+      let gotKill = false;
 
       // If in yard (-1)
       if (curProg === -1) {
@@ -1372,6 +1376,7 @@
                 if (oppRingIdx === targetRingIdx) {
                   // KAAT DIYA! Send back to yard!
                   otherArr[oppIdx] = -1;
+                  gotKill = true;
                   triggerHaptic('heavy');
                   triggerKillCelebration(player, idx + 1, oppIdx + 1);
                 }
@@ -1379,6 +1384,12 @@
             });
           }
         }
+      }
+
+      // Non-6 chal aur bina kill/goal ke turn pass ho jata hai -> counter reset
+      if (dice !== 6 && !gotKill && nextProg < 56) {
+        if (player === 'my') myConsecutiveSixes = 0;
+        else oppConsecutiveSixes = 0;
       }
 
       renderAllGotis();
@@ -1399,6 +1410,9 @@
        ========================================================================== */
     function setOppDice(num) {
       triggerHaptic('light');
+
+      // Opponent dice roll hua -> Hamara turn khatam, 6 counter reset
+      myConsecutiveSixes = 0;
 
       // ── 3-SIX BUST CHECK FOR OPPONENT ──────────────────────────────
       if (num === 6) {
@@ -1421,7 +1435,8 @@
 
       currentOppDice = num;
       document.querySelectorAll('.dice-btn-opp').forEach(b => b.classList.remove('selected'));
-      event.target.classList.add('selected');
+      const activeOppBtn = document.getElementById(`opp_d_${num}`);
+      if (activeOppBtn) activeOppBtn.classList.add('selected');
       document.getElementById('oppDiceStatus').textContent =
         num === 6
           ? `DICE: 6 (${oppConsecutiveSixes}/3 sixes) ➔ Goti chalo`
@@ -1430,6 +1445,9 @@
 
     function setMyDice(num) {
       triggerHaptic('light');
+
+      // Hamara dice roll hua -> Opponent ka turn khatam, unka 6 counter reset
+      oppConsecutiveSixes = 0;
 
       // ── 3-SIX BUST CHECK FOR MY TURN ───────────────────────────────
       if (num === 6) {
@@ -1468,8 +1486,6 @@
           ? `DICE: 6 🎯 (${myConsecutiveSixes}/3 sixes — Chal chalo!)`
           : `DICE: ${num}`;
 
-      // Reset opp consecutive counter when my dice is set (new round)
-      if (num !== 6) oppConsecutiveSixes = 0;
 
       // AUTOMATIC ENGINE: Instantly calculate best move
       calculateBestMove(num);
@@ -2092,7 +2108,9 @@
         my: [...myState],
         opp: [...oppState],
         myDice: currentMyDice,
-        oppDice: currentOppDice
+        oppDice: currentOppDice,
+        mySixes: myConsecutiveSixes,
+        oppSixes: oppConsecutiveSixes
       });
       if (historyStack.length > 20) historyStack.shift();
     }
@@ -2106,6 +2124,8 @@
       const prev = historyStack.pop();
       myState = [...prev.my];
       oppState = [...prev.opp];
+      myConsecutiveSixes = (prev.mySixes !== undefined) ? prev.mySixes : 0;
+      oppConsecutiveSixes = (prev.oppSixes !== undefined) ? prev.oppSixes : 0;
       currentMyDice = null;
       currentOppDice = null;
       bestMoveObj = null;
